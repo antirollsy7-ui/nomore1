@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Netlik - Takip Uygulaması</title>
+    <!-- Google Font & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== TEMA DEĞİŞKENLERİ (I Am Sober stili) ===== */
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131c;
+            --bg-card: #1a1a28;
+            --bg-card-hover: #222236;
+            --text-primary: #ffffff;
+            --text-secondary: #8a8aa0;
+            --accent-color: #6c5ce7;
+            --accent-light: #a29bfe;
+            --accent-glow: rgba(108, 92, 231, 0.3);
+            --danger-color: #ff4757;
+            --success-color: #2ed573;
+            --border-color: #2a2a40;
+            --radius: 18px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* ===== ANA KAP ===== */
+        .app-container {
+            max-width: 480px;
+            width: 100%;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 24px 20px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Başlık */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-actions button {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-actions button:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* ===== ANA GÖSTERGE (Zaman Sayacı) ===== */
+        .timer-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 30px 20px 25px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.3;
+            animation: pulseGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        .timer-card .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timer-card .time-display {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 8px 0 4px;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(135deg, #ffffff, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timer-card .sub-time {
+            font-size: 14px;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .timer-card .motivation-text {
+            font-size: 14px;
+            color: var(--accent-light);
+            margin-top: 12px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== İLERLEME ÇUBUĞU (Gün, Hafta, Ay) ===== */
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-item .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .stat-item .stat-number.gold {
+            color: #f9ca24;
+        }
+        .stat-item .stat-number.green {
+            color: var(--success-color);
+        }
+        .stat-item .stat-number.purple {
+            color: var(--accent-light);
+        }
+
+        /* ===== BUTONLAR ===== */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: var(--accent-color);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #5a4bd1;
+            transform: scale(1.02);
+        }
+
+        .btn-primary.danger {
+            background: var(--danger-color);
+        }
+        .btn-primary.danger:hover {
+            background: #e84141;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 15px;
+            padding: 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* ===== GEÇMİŞ / GÜNLÜK ===== */
+        .journal-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .journal-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .journal-section .section-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .journal-section .section-header a {
+            color: var(--accent-light);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .journal-entry {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .journal-entry .entry-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .journal-entry .entry-date {
+            font-size: 11px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        /* ===== ALT BİLGİ ===== */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .footer a {
+            color: var(--accent-light);
+            text-decoration: none;
+        }
+
+        /* ===== MODAL (Nüksetme Onayı) ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 30px 24px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .modal-box h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .modal-box p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-box .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .modal-box .modal-actions .btn-cancel:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .modal-box .modal-actions .btn-confirm {
+            background: var(--danger-color);
+            color: #fff;
+        }
+
+        .modal-box .modal-actions .btn-confirm:hover {
+            background: #e84141;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 420px) {
+            .app-container { padding: 16px 14px; }
+            .timer-card .time-display { font-size: 36px; }
+            .progress-stats { gap: 6px; }
+            .stat-item .stat-number { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- BAŞLIK -->
+    <div class="app-header">
+        <h1><i class="fas fa-heart" style="color:var(--accent-light); margin-right:6px;"></i> Netlik</h1>
+        <div class="header-actions">
+            <button id="resetBtn" title="Sıfırla"><i class="fas fa-undo-alt"></i></button>
+            <button id="settingsBtn" title="Ayarlar"><i class="fas fa-sliders-h"></i></button>
+        </div>
+    </div>
+
+    <!-- ZAMAN GÖSTERGESİ -->
+    <div class="timer-card" id="timerCard">
+        <div class="label">İYİLEŞME SÜRESİ</div>
+        <div class="time-display" id="timeDisplay">00:00:00</div>
+        <div class="sub-time" id="subTimeDisplay">0 gün</div>
+        <div class="motivation-text" id="motivationText">Her gün daha güçlüsün. 💪</div>
+    </div>
+
+    <!-- İLERLEME -->
+    <div class="progress-stats">
+        <div class="stat-item">
+            <div class="stat-number gold" id="dayCount">0</div>
+            <div class="stat-label">Gün</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number green" id="weekCount">0</div>
+            <div class="stat-label">Hafta</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number purple" id="monthCount">0</div>
+            <div class="stat-label">Ay</div>
+        </div>
+    </div>
+
+    <!-- BUTONLAR -->
+    <div class="action-buttons">
+        <button class="btn-primary" id="checkInBtn"><i class="fas fa-check-circle"></i> Bugün İyiyim</button>
+        <button class="btn-primary danger" id="relapseBtn"><i class="fas fa-exclamation-triangle"></i> Nüksettim</button>
+    </div>
+
+    <!-- GÜNLÜK / GEÇMİŞ -->
+    <div class="journal-section">
+        <div class="section-header">
+            <h3><i class="fas fa-book-open" style="margin-right:6px; color:var(--accent-light);"></i> Duygularım</h3>
+            <a href="#" id="addJournalLink">+ Ekle</a>
+        </div>
+        <div id="journalContainer">
+            <div class="empty-state">Henüz bir not eklemedin.</div>
+        </div>
+    </div>
+
+    <!-- ALT BİLGİ -->
+    <div class="footer">
+        <span>© 2025 Netlik</span>
+        <span><i class="fas fa-shield-alt" style="margin-right:4px;"></i> Gizlilik</span>
+    </div>
+</div>
+
+<!-- NÜKSETME MODALI -->
+<div class="modal-overlay" id="relapseModal">
+    <div class="modal-box">
+        <h2>⚠️ Nüksettiğini Onayla</h2>
+        <p>Bu işlem geri alınamaz. Sayaç sıfırlanacak ve bu anı kaydedeceğiz. Emin misin?</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="modalCancel">Vazgeç</button>
+            <button class="btn-confirm" id="modalConfirm">Evet, Onaylıyorum</button>
+        </div>
+    </div>
+</div>
+
+<!-- GÜNLÜK EKLEME MODALI -->
+<div class="modal-overlay" id="journalModal">
+    <div class="modal-box" style="text-align:left;">
+        <h2>📝 Duygu Kaydı</h2>
+        <p style="margin-bottom:12px;">Bugün nasıl hissediyorsun?</p>
+        <textarea id="journalInput" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-family:inherit; font-size:14px; resize:vertical; min-height:80px;" placeholder="Duygularını yaz..."></textarea>
+        <div class="modal-actions" style="margin-top:16px;">
+            <button class="btn-cancel" id="journalCancel">İptal</button>
+            <button class="btn-confirm" id="journalSave" style="background:var(--accent-color);">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ===== ELEMANLAR =====
+        const timeDisplay = document.getElementById('timeDisplay');
+        const subTimeDisplay = document.getElementById('subTimeDisplay');
+        const motivationText = document.getElementById('motivationText');
+        const dayCount = document.getElementById('dayCount');
+        const weekCount = document.getElementById('weekCount');
+        const monthCount = document.getElementById('monthCount');
+        const journalContainer = document.getElementById('journalContainer');
+
+        const checkInBtn = document.getElementById('checkInBtn');
+        const relapseBtn = document.getElementById('relapseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const addJournalLink = document.getElementById('addJournalLink');
+
+        const relapseModal = document.getElementById('relapseModal');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalConfirm = document.getElementById('modalConfirm');
+
+        const journalModal = document.getElementById('journalModal');
+        const journalInput = document.getElementById('journalInput');
+        const journalCancel = document.getElementById('journalCancel');
+        const journalSave = document.getElementById('journalSave');
+
+        // ===== VERİLER =====
+        const STORAGE_KEY = 'netlik_data';
+        let data = {
+            startDate: null,          // ISO string
+            relapseHistory: [],       // ISO string array
+            journals: [],             // { date: ISO, text: string }
+            lastCheckIn: null
+        };
+
+        let timerInterval = null;
+        let isRelapseModalOpen = false;
+        let isJournalModalOpen = false;
+
+        // ===== MOTİVASYON MESAJLARI =====
+        const MOTIVATION = [
+            'Her gün daha güçlüsün. 💪',
+            'Bugün geçmiştekinden daha iyisin. 🌟',
+            'Kendine inan, başarabilirsin. 🚀',
+            'Her saniye değerli, sen değerlisin. ✨',
+            'Bu yolculukta yalnız değilsin. 🤝',
+            'Her an yeni bir başlangıçtır. 🌅',
+            'Dayanıklılığın muhteşem. 🏆',
+            'Parlıyorsun, devam et! 💎'
+        ];
+
+        // ===== YARDIMCI FONKSİYONLAR =====
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            const d = new Date(iso);
+            return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function getElapsedSeconds() {
+            if (!data.startDate) return 0;
+            const start = new Date(data.startDate);
+            const now = new Date();
+            return (now - start) / 1000;
+        }
+
+        function getDaysElapsed() {
+            return Math.floor(getElapsedSeconds() / 86400);
+        }
+
+        function getWeeksElapsed() {
+            return Math.floor(getDaysElapsed() / 7);
+        }
+
+        function getMonthsElapsed() {
+            if (!data.startDate) return 0;
+            const start = new Date(data.startDate);
+            const now = new Date();
+            return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+        }
+
+        function getRandomMotivation() {
+            return MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)];
+        }
+
+        // ===== KAYDET / YÜKLE =====
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) { /* ignore */ }
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    data = parsed;
+                    // compat: eski veri yapısı
+                    if (!data.journals) data.journals = [];
+                    if (!data.relapseHistory) data.relapseHistory = [];
+                    return true;
+                }
+            } catch (e) { /* ignore */ }
+            return false;
+        }
+
+        function resetData() {
+            data = {
+                startDate: null,
+                relapseHistory: [],
+                journals: [],
+                lastCheckIn: null
+            };
+            saveData();
+            updateUI();
+        }
+
+        // ===== GÜNCELLEME =====
+        function updateUI() {
+            const seconds = getElapsedSeconds();
+            const days = getDaysElapsed();
+            const weeks = getWeeksElapsed();
+            const months = getMonthsElapsed();
+
+            // Ana sayaç
+            timeDisplay.textContent = formatTime(seconds);
+            subTimeDisplay.textContent = `${days} gün`;
+
+            // İlerleme
+            dayCount.textContent = days;
+            weekCount.textContent = weeks;
+            monthCount.textContent = months;
+
+            // Motivasyon
+            if (days > 0) {
+                motivationText.textContent = `${days} gündür iyileşiyorsun. ${getRandomMotivation()}`;
+            } else if (seconds > 0) {
+                motivationText.textContent = `Harika başlangıç! ${getRandomMotivation()}`;
+            } else {
+                motivationText.textContent = 'Başlamak için "Bugün İyiyim" butonuna bas. 💪';
+            }
+
+            // Günlük
+            renderJournals();
+
+            // Check-in butonu durumu (bugün yapılmış mı?)
+            const today = new Date().toDateString();
+            if (data.lastCheckIn === today) {
+                checkInBtn.innerHTML = '<i class="fas fa-check-circle"></i> Bugün Giriş Yapıldı';
+                checkInBtn.style.opacity = '0.6';
+                checkInBtn.style.cursor = 'default';
+            } else {
+                checkInBtn.innerHTML = '<i class="fas fa-check-circle"></i> Bugün İyiyim';
+                checkInBtn.style.opacity = '1';
+                checkInBtn.style.cursor = 'pointer';
+            }
+        }
+
+        function renderJournals() {
+            if (!data.journals || data.journals.length === 0) {
+                journalContainer.innerHTML = '<div class="empty-state">Henüz bir not eklemedin.</div>';
+                return;
+            }
+            // Son 5
+            const sorted = [...data.journals].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const recent = sorted.slice(0, 5);
+            let html = '';
+            recent.forEach(j => {
+                html += `
+                    <div class="journal-entry">
+                        <div class="entry-text">${escapeHtml(j.text)}</div>
+                        <div class="entry-date">${formatDate(j.date)}</div>
+                    </div>
+                `;
+            });
+            journalContainer.innerHTML = html;
+        }
+
+        // Basit escape
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== AKTİVİTELER =====
+        function doCheckIn() {
+            const today = new Date().toDateString();
+            if (data.lastCheckIn === today) {
+                // zaten yapılmış
+                return;
+            }
+
+            if (!data.startDate) {
+                // ilk kez başlıyor
+                data.startDate = new Date().toISOString();
+                data.relapseHistory = [];
+                data.journals = [];
+                motivationText.textContent = 'Tebrikler! Yolculuğun başladı. 🎉';
+            }
+
+            data.lastCheckIn = today;
+
+            // Otomatik günlük
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('tr-TR');
+            const day = getDaysElapsed();
+            let note = '';
+            if (day === 0) {
+                note = 'Bugün başladım! Kendimle gurur duyuyorum. 💪';
+            } else if (day % 7 === 0 && day > 0) {
+                note = `${day} gün oldu! Her gün biraz daha iyiyim. 🌟`;
+            } else {
+                const msgs = [
+                    'Bugün iyiyim, kendimle barışığım.',
+                    'Duygularım dengeli, iyileşiyorum.',
+                    'Bugün zorlukların üstesinden geldim.',
+                    'Kendime güveniyorum, her şey daha iyi olacak.',
+                    'Bugün minnettarım, hayat güzel.'
+                ];
+                note = msgs[Math.floor(Math.random() * msgs.length)];
+            }
+            data.journals.push({
+                date: new Date().toISOString(),
+                text: note
+            });
+
+            saveData();
+            updateUI();
+        }
+
+        function doRelapse() {
+            if (!data.startDate) {
+                // henüz başlamamış
+                return;
+            }
+
+            const now = new Date();
+            data.relapseHistory.push(now.toISOString());
+            // Sayaç sıfırlanır, yeni başlangıç
+            data.startDate = now.toISOString();
+            data.lastCheckIn = null;
+
+            // Otomatik günlük
+            data.journals.push({
+                date: now.toISOString(),
+                text: 'Bugün nüksettim. Ama pes etmeyeceğim, yeniden başlıyorum. 💪'
+            });
+
+            saveData();
+            updateUI();
+            motivationText.textContent = 'Yeniden başlıyorsun, bu cesaret ister. Her gün yeni bir fırsattır. 🌅';
+        }
+
+        // ===== TIMER =====
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateUI, 1000);
+        }
+
+        // ===== MODAL KONTROLLERİ =====
+        function showRelapseModal() {
+            if (!data.startDate) {
+                // başlamamış
+                return;
+            }
+            isRelapseModalOpen = true;
+            relapseModal.classList.add('active');
+        }
+
+        function hideRelapseModal() {
+            isRelapseModalOpen = false;
+            relapseModal.classList.remove('active');
+        }
+
+        function showJournalModal() {
+            isJournalModalOpen = true;
+            journalModal.classList.add('active');
+            journalInput.value = '';
+            journalInput.focus();
+        }
+
+        function hideJournalModal() {
+            isJournalModalOpen = false;
+            journalModal.classList.remove('active');
+        }
+
+        function saveJournalFromModal() {
+            const text = journalInput.value.trim();
+            if (text) {
+                data.journals.push({
+                    date: new Date().toISOString(),
+                    text: text
+                });
+                saveData();
+                updateUI();
+            }
+            hideJournalModal();
+        }
+
+        // ===== RESET =====
+        function hardReset() {
+            if (confirm('Tüm verileri silmek istediğine emin misin? Bu işlem geri alınamaz.')) {
+                resetData();
+                motivationText.textContent = 'Veriler sıfırlandı. Yeni başlangıç yapabilirsin.';
+            }
+        }
+
+        // ===== OLAY BAĞLAMA =====
+        checkInBtn.addEventListener('click', doCheckIn);
+
+        relapseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (data.startDate) {
+                showRelapseModal();
+            } else {
+                // başlamamışsa direkt başlat
+                data.startDate = new Date().toISOString();
+                data.lastCheckIn = new Date().toDateString();
+                data.journals.push({
+                    date: new Date().toISOString(),
+                    text: 'Bugün başladım! Nüksetme düğmesine bastım ama aslında başlıyorum. 💪'
+                });
+                saveData();
+                updateUI();
+                motivationText.textContent = 'Tebrikler! Yolculuğun başladı. 🎉';
+            }
+        });
+
+        modalCancel.addEventListener('click', hideRelapseModal);
+        modalConfirm.addEventListener('click', function() {
+            doRelapse();
+            hideRelapseModal();
+        });
+
+        // Modal dışına tıklayınca kapat
+        relapseModal.addEventListener('click', function(e) {
+            if (e.target === relapseModal) hideRelapseModal();
+        });
+
+        // Günlük ekle
+        addJournalLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showJournalModal();
+        });
+
+        journalCancel.addEventListener('click', hideJournalModal);
+        journalSave.addEventListener('click', saveJournalFromModal);
+
+        journalModal.addEventListener('click', function(e) {
+            if (e.target === journalModal) hideJournalModal();
+        });
+
+        // Enter ile kaydet
+        journalInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.shiftKey) {
+                e.preventDefault();
+                saveJournalFromModal();
+            }
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', hardReset);
+
+        // ===== BAŞLAT =====
+        if (!loadData()) {
+            // ilk açılış
+            resetData();
+        }
+
+        // Başlangıç zamanı yoksa ama veri varsa
+        if (data.startDate) {
+            // devam
+        }
+
+        updateUI();
+        startTimer();
+
+        // Her dakika UI yenile
+        setInterval(updateUI, 60000);
+
+        // Konsol bilgisi
+        console.log('%c Netlik - I Am Sober Tarzı Takip Uygulaması ', 'background: #6c5ce7; color: white; font-size: 16px; padding: 8px 16px; border-radius: 8px;');
+        console.log('🔹 Başlangıç:', data.startDate ? new Date(data.startDate).toLocaleString() : 'Başlanmadı');
+        console.log('🔹 Günlük:', data.journals.length, 'not');
+        console.log('📖 GitHub Pages ile yayınlayabilirsin.');
+
+        console.log('🔹 Nüksetme sayısı:', data.relapseHistory.length);
+
+    })();
+</script>
+
+</body>
+</html>
